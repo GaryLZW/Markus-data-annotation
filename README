@@ -1,0 +1,7 @@
+image_processor/
+│
+├── process.py          # 主流程
+├── detectors.py        # 边缘 + 轮廓检测
+├── filters.py          # 轮廓筛选规则
+├── enhancer.py         # 超分辨率增强
+└── utils.py            # IO / 并行处理
