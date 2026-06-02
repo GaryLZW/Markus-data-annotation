@@ -1,5 +1,6 @@
 # filters.py
 import cv2
+import numpy as np
 def filter_contours(contours, img_shape,
                     min_area=100, max_area_ratio=0.3,
                     min_aspect=0.2, max_aspect=5.0):
@@ -18,7 +19,7 @@ def filter_contours(contours, img_shape,
         peri = cv2.arcLength(cnt, True)
         approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
         # 太简单的可能是箭头
-        if len(approx) < 3:
+        if len(approx) < 4:
             continue
         cv2.fillPoly(mask, [cnt], 255)
     return mask

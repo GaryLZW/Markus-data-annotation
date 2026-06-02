@@ -6,6 +6,7 @@ def extract_structure_mask(img, blur_ksize=5, canny_low=50, canny_high=150):
     """
     返回结构式的二值掩膜
     """
+    # Convert original image to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # 去噪
