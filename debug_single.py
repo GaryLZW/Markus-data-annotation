@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from image_processor.detectors import extract_structure_mask
-from image_processor.filters import filter_contours
+from image_processor.filters import filter_contours_by_area
 
 #IMG_PATH = "dataset/raw/mol_0216.png"  
 
@@ -25,7 +25,7 @@ def debug_pipeline(img_path):
     )
     
 
-    structure_mask = filter_contours(
+    structure_mask = filter_contours_by_area(
         contours,
         img.shape,
         min_area=300,

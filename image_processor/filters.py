@@ -1,7 +1,7 @@
 # filters.py
 import cv2
 import numpy as np
-def filter_contours(contours, img_shape,
+def filter_contours_by_area(contours, img_shape,
                     min_area=100, max_area_ratio=0.3,
                     min_aspect=0.2, max_aspect=5.0):
     h, w = img_shape[:2]
@@ -23,3 +23,5 @@ def filter_contours(contours, img_shape,
             continue
         cv2.fillPoly(mask, [cnt], 255)
     return mask
+
+
