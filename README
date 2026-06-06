@@ -5,3 +5,8 @@ image_processor/
 ├── filters.py          # 轮廓筛选规则
 ├── enhancer.py         # 超分辨率增强
 └── utils.py            # IO / 并行处理
+
+
+Dependencies
+
+OpenCV, scikit-learn
