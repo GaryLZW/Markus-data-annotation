@@ -54,9 +54,9 @@ def distance_weighted_sample(cnt, n_samples=8, boost_endpoints=True):
     # 距离权重
     probs = dists / dists.sum()
     
-    if n_samples < len(cnt) * 0.4:
-        n_samples = int(len(cnt) * 0.4)
-    elif n_samples > len(cnt):
+    if n_samples < len(cnt) * 0.5:
+        n_samples = int(len(cnt) * 0.5)
+    elif n_samples > len(cnt)-5:
         n_samples = len(cnt) - 1
     
 
