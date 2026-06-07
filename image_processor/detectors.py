@@ -16,7 +16,7 @@ def extract_structure_mask(img, blur_ksize=5, canny_low=50, canny_high=150):
     edges = cv2.Canny(blurred, canny_low, canny_high)
 
     # 膨胀边缘，连起虚线
-    kernel = np.ones((2,2), np.uint8)
-    edges = cv2.dilate(edges, kernel, iterations=1)
+    #kernel = np.ones((2,2), np.uint8)
+    #edges = cv2.dilate(edges, kernel, iterations=1)
 
     return edges
