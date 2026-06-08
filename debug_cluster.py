@@ -117,9 +117,10 @@ def debug_distance_weighted_cluster(img_path):
 
 if __name__ == "__main__":
     test_images = [
-        "dataset/raw/mol_0216.png",
-        "dataset/raw/mol_0220.jpg",
-        "dataset/raw/mol_0222.png",
+        #"dataset/raw/mol_0216.png",
+        #"dataset/raw/mol_0220.jpg",
+        #"dataset/raw/mol_0222.png",
+        "dataset/raw/mol_0141.png",
     ]
     for path in test_images:
         #if debug_clustering(path):
