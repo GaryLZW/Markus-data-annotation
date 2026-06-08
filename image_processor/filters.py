@@ -33,7 +33,8 @@ def distance_weighted_sample(cnt, uniform_step=3, n_samples=8, boost_endpoints=T
     cnt = cnt.reshape(-1, 2)
     M = cv2.moments(cnt)
     if M["m00"] == 0:
-        return cnt[::len(cnt)//max(n_samples,1)]
+        return cnt[::len(cnt)]
+    
     cx = M["m10"] / M["m00"]
     cy = M["m01"] / M["m00"]
     center = np.array([cx, cy])
