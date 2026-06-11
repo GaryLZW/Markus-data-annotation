@@ -4,8 +4,11 @@ from sklearn.cluster import DBSCAN, HDBSCAN
 from image_processor.detectors import extract_structure_mask
 from image_processor.filters import filter_contours_by_area, distance_weighted_sample, extract_point_cloud  
 from collections import Counter
+from image_processor.img_preprocess import preprocess, is_this_jpg
 
 def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_points_per_contour, use_endpoint_boost=True):
+    is_jpg = is_this_jpg(img_path)
+    ksize = 14
     img = cv2.imread(img_path)
     if img is None:
         print(":x: 图片读取失败")
@@ -20,6 +23,20 @@ def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_poin
     contours, _ = cv2.findContours(
         edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
+
+    m00 = []
+    for cnt in contours:
+        cnt = cnt.reshape(-1, 2)
+        M = cv2.moments(cnt)
+        m00.append(M["m00"] == 0) # Is this contour very small
+
+
+    if np.any(m00):
+        edges = preprocess(img, ksize, is_jpg)
+        contours, _ = cv2.findContours(
+            edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+    
     '''
     contours = [
         cnt for cnt in contours
@@ -103,7 +120,7 @@ def save_for_ocr(mask, out_path, invert=True, pad=10):
 def process_one_image(img_path, out_path, invert=False):
     # ===== 可调参数=====
 
-    EPS = 100                 # 聚类半径
+    EPS = 70                # 聚类半径
     MIN_SAMPLES = 7        # 最小点数
     uniform_step = 3
     far_points_per_contour = 10   # 远端采样数

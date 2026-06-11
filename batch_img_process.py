@@ -20,8 +20,8 @@ def main():
     ]
     print(f"Found {len(img_names)} images")
     # CPU 核心数（留 1~2 核给系统）
-    #max_workers = os.cpu_count() - 1 or 1
-    max_workers = 4
+    max_workers = os.cpu_count() - 1 or 1
+    #max_workers = 4
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(worker, name) for name in img_names]
         for future in as_completed(futures):

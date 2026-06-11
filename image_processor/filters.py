@@ -33,7 +33,7 @@ def distance_weighted_sample(cnt, uniform_step=3, n_samples=8, boost_endpoints=T
     cnt = cnt.reshape(-1, 2)
     M = cv2.moments(cnt)
     if M["m00"] == 0:
-        return cnt[::len(cnt)]
+        return cnt[::1]
     
     cx = M["m10"] / M["m00"]
     cy = M["m01"] / M["m00"]
@@ -70,12 +70,70 @@ def distance_weighted_sample(cnt, uniform_step=3, n_samples=8, boost_endpoints=T
     return sampled
 
 
-def extract_point_cloud(contours, uniform_step, far_points_per_contour, use_endpoint_boost):
+
+def sample_skeleton_points(img, n_samples=30):
+    # Convert original image to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                   cv2.THRESH_BINARY_INV, blockSize=11, C=2)
+    skel = cv2.ximgproc.thinning(thresh)
+
+    pts = np.column_stack(np.where(skel > 0))
+    
+    if len(pts) == 0:
+        return np.empty((0, 2))
+    
+    if n_samples < len(pts) * 0.3:
+        n_samples = int(len(pts) * 0.3)
+    elif n_samples > len(pts)-5:
+        n_samples = len(pts) - 1
+    # 重心
+    center = pts.mean(axis=0)
+    # 距离权重
+    dists = np.linalg.norm(pts - center, axis=1)
+    probs = dists / dists.sum()
+    idx = np.random.choice(
+                           len(pts),
+                           size=min(n_samples, len(pts)),
+                           replace=False,
+                           p=probs
+    )
+    
+    skel_pts = np.array([(x, y) for (y, x) in pts[idx]])
+    
+    return skel_pts
+
+def assign_skeleton_to_contours(skel_pts, contours, max_dist=10):
+    """
+    返回：
+    skeleton_points: Nx2
+    skeleton_owner: N (轮廓索引)
+    """
+    skel_pts = skel_pts.astype(np.uint8)
+    owner = []
+
+    for pt in skel_pts:
+
+        best_i = -1
+        best_d = max_dist
+
+        for i, cnt in enumerate(contours):
+            d = cv2.pointPolygonTest(cnt, pt, True)
+            if d >= 0 and d < best_d:
+                best_d = d
+                best_i = i
+
+        owner.append(best_i)
+
+    return np.array(owner)
+
+def extract_point_cloud(img, contours, uniform_step, far_points_per_contour, use_endpoint_boost):
     """
     返回：
     - points: Nx2
     - point_map: 每个点对应哪个轮廓
     """
+    # Two sets of points Contour Skeleton
     points = []
     point_map = []
     for i, cnt in enumerate(contours):
@@ -96,5 +154,16 @@ def extract_point_cloud(contours, uniform_step, far_points_per_contour, use_endp
         for p in far_pts:
             points.append(p.tolist())
             point_map.append(i)
+    
+    #skeletons = sample_skeleton(img)
+
+    #for j, skel in enumerate(skeletons):
+    s_pts = sample_skeleton_points(img)
+    
+    skel_owner = assign_skeleton_to_contours(s_pts, contours)
+    for j, p in enumerate(s_pts):
+        points.append(p.tolist())
+        point_map.append( skel_owner[j] )
+
     return np.array(points), point_map
 

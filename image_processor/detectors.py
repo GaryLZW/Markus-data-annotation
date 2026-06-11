@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 
-def extract_structure_mask(img, blur_ksize=5, canny_low=50, canny_high=150):
+def extract_structure_mask(img, blur_ksize=5, canny_low=50, canny_high=150, vis=False):
     """
     返回结构式的二值掩膜
     """
@@ -13,10 +13,14 @@ def extract_structure_mask(img, blur_ksize=5, canny_low=50, canny_high=150):
     blurred = cv2.GaussianBlur(gray, (blur_ksize, blur_ksize), 0)
 
     # 边缘检测
+    
     edges = cv2.Canny(blurred, canny_low, canny_high)
 
     # 膨胀边缘，连起虚线
     #kernel = np.ones((2,2), np.uint8)
     #edges = cv2.dilate(edges, kernel, iterations=1)
-
+    if vis:
+        cv2.imshow("2. Edge Mask", edges)
     return edges
+
+
