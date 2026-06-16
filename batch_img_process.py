@@ -2,8 +2,10 @@ import os
 import cv2
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from image_processor.process import process_one_image  # 你已有的处理函数
-RAW_DIR = "../ocr-img-test/raw"
-OUT_DIR = "../ocr-img-test/processed"
+RAW_DIR = "../1_v2/pic"
+OUT_DIR = "../1_v2/pic_processed"
+# RAW_DIR = "../ocr-img-test/raw"
+# OUT_DIR = "../ocr-img-test/processed"
 os.makedirs(OUT_DIR, exist_ok=True)
 def worker(img_name):
     try:

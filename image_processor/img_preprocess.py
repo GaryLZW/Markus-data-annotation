@@ -7,7 +7,7 @@ def is_this_jpg(img_path):
     else:
         return False
 
-def upscale(img, scale=2):
+def rescale(img, scale=2):
     return cv2.resize(
         img,
         None,

@@ -4,7 +4,7 @@ from sklearn.cluster import DBSCAN, HDBSCAN
 from image_processor.detectors import extract_structure_mask
 from image_processor.filters import filter_contours_by_area, distance_weighted_sample, extract_point_cloud  
 from collections import Counter
-from image_processor.img_preprocess import preprocess, is_this_jpg
+from image_processor.img_preprocess import rescale, preprocess, is_this_jpg
 
 def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_points_per_contour, use_endpoint_boost=True):
     is_jpg = is_this_jpg(img_path)
@@ -14,9 +14,10 @@ def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_poin
         print(":x: 图片读取失败")
         return
     # 1. 边缘 + 初筛
-    #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    #blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    #edges = cv2.Canny(blurred, 50, 150)
+    h, w = img.shape[:2]
+
+    if h < 1500 or h > 2500:
+        img = rescale( img, scale=1500.0/h )
     
     edges = extract_structure_mask(img)
 
@@ -24,18 +25,18 @@ def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_poin
         edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
 
-    m00 = []
-    for cnt in contours:
-        cnt = cnt.reshape(-1, 2)
-        M = cv2.moments(cnt)
-        m00.append(M["m00"] == 0) # Is this contour very small
+    # m00 = []
+    # for cnt in contours:
+    #     cnt = cnt.reshape(-1, 2)
+    #     M = cv2.moments(cnt)
+    #     m00.append(M["m00"] == 0) # Is this contour very small
 
 
-    if np.any(m00):
-        edges = preprocess(img, ksize, is_jpg)
-        contours, _ = cv2.findContours(
-            edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+    # if np.any(m00):
+    #     edges = preprocess(img, ksize, is_jpg)
+    #     contours, _ = cv2.findContours(
+    #         edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    #     )
     
     '''
     contours = [
@@ -47,7 +48,7 @@ def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_poin
         print(":warning: 未检测到轮廓")
         return
     # 2. 构建点云
-    points, point_map = extract_point_cloud(contours, uniform_step, far_points_per_contour, use_endpoint_boost)
+    points, point_map = extract_point_cloud(img, contours, uniform_step, far_points_per_contour, use_endpoint_boost)
     
 
     # 3. DBSCAN 聚类
@@ -73,16 +74,16 @@ def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_poin
     # 6. 主聚类点 → 主聚类轮廓
     contour_labels = np.full(len(contours), -1)
     for i, lbl in enumerate(labels):
-        if lbl == main_label:
+        if point_map[i] != -1 and lbl == main_label:
             contour_labels[point_map[i]] = main_label
     
     # 7. 主聚类轮廓 -- 主聚类轮廓中的次聚类点 -- 相关次聚类轮廓
-    main_contour_idx = [i for i, cnt in enumerate(contours) if contour_labels[i] == main_label]
+    main_contour_idx = [i for i in range(len(contours)) if contour_labels[i] == main_label]
     
     sub_cluster_lablels = [lbl for i, lbl in enumerate(labels) if point_map[i] in main_contour_idx]
     
     for i, lbl in enumerate(labels):
-        if lbl in sub_cluster_lablels:
+        if point_map[i] != -1 and lbl in sub_cluster_lablels:
             contour_labels[point_map[i]] = lbl
 
 
@@ -95,8 +96,9 @@ def distance_weighted_cluster(img_path, eps, min_samples, uniform_step, far_poin
     masked = cv2.bitwise_and(img, img, mask=mask)
     #cv2.imshow("2. Main Structure Mask", mask)
     #cv2.imshow("3. Final Result", masked)
+    gray = cv2.cvtColor(masked, cv2.COLOR_BGR2GRAY)
 
-    return masked
+    return gray
     
 
 def save_for_ocr(mask, out_path, invert=True, pad=10):

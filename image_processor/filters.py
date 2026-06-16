@@ -47,16 +47,18 @@ def distance_weighted_sample(cnt, uniform_step=3, n_samples=8, boost_endpoints=T
     # 距离权重
     probs = dists / dists.sum()
     
-    if n_samples < len(cnt) * 0.3:
-        n_samples = int(len(cnt) * 0.3)
+    replace = False
+    if n_samples < len(cnt) * 0.1:
+        n_samples = int(len(cnt) * 0.1)
     elif n_samples > len(cnt)-5:
         n_samples = len(cnt) - 1
+        replace = True
     
-
+    # print(len(cnt))
     idx_weighted = np.random.choice(
         len(cnt),
         size=n_samples,
-        replace=False,
+        replace=replace,
         p=probs
     )
     
@@ -83,24 +85,24 @@ def sample_skeleton_points(img, n_samples=30):
     if len(pts) == 0:
         return np.empty((0, 2))
     
-    if n_samples < len(pts) * 0.3:
-        n_samples = int(len(pts) * 0.3)
+    if n_samples < len(pts) * 0.2:
+        n_samples = int(len(pts) * 0.2)
     elif n_samples > len(pts)-5:
         n_samples = len(pts) - 1
-    # 重心
-    center = pts.mean(axis=0)
-    # 距离权重
-    dists = np.linalg.norm(pts - center, axis=1)
-    probs = dists / dists.sum()
-    idx = np.random.choice(
-                           len(pts),
-                           size=min(n_samples, len(pts)),
-                           replace=False,
-                           p=probs
-    )
+    # # 重心
+    # center = pts.mean(axis=0)
+    # # 距离权重
+    # dists = np.linalg.norm(pts - center, axis=1)
+    # probs = dists / dists.sum()
+    # idx = np.random.choice(
+    #                        len(pts),
+    #                        size=min(n_samples, len(pts)),
+    #                        replace=False,
+    #                        p=probs
+    # )
     
-    skel_pts = np.array([(x, y) for (y, x) in pts[idx]])
-    
+    # skel_pts = np.array([(x, y) for (y, x) in pts[idx]])
+    skel_pts = np.array([(x, y) for (y, x) in pts[::int(len(pts)/n_samples)]])
     return skel_pts
 
 def assign_skeleton_to_contours(skel_pts, contours, max_dist=10):
@@ -110,22 +112,24 @@ def assign_skeleton_to_contours(skel_pts, contours, max_dist=10):
     skeleton_owner: N (轮廓索引)
     """
     skel_pts = skel_pts.astype(np.uint8)
-    owner = []
+    
+    return np.repeat(-1, len(skel_pts))
+    # owner = []
 
-    for pt in skel_pts:
+    # for pt in skel_pts:
 
-        best_i = -1
-        best_d = max_dist
+    #     best_i = -1
+    #     best_d = max_dist
 
-        for i, cnt in enumerate(contours):
-            d = cv2.pointPolygonTest(cnt, pt, True)
-            if d >= 0 and d < best_d:
-                best_d = d
-                best_i = i
+    #     for i, cnt in enumerate(contours):
+    #         d = cv2.pointPolygonTest(cnt, pt, True)
+    #         if d >= 0 and d < best_d:
+    #             best_d = d
+    #             best_i = i
 
-        owner.append(best_i)
+    #     owner.append(best_i)
 
-    return np.array(owner)
+    # return np.array(owner)
 
 def extract_point_cloud(img, contours, uniform_step, far_points_per_contour, use_endpoint_boost):
     """
@@ -155,15 +159,12 @@ def extract_point_cloud(img, contours, uniform_step, far_points_per_contour, use
             points.append(p.tolist())
             point_map.append(i)
     
-    #skeletons = sample_skeleton(img)
-
-    #for j, skel in enumerate(skeletons):
     s_pts = sample_skeleton_points(img)
     
     skel_owner = assign_skeleton_to_contours(s_pts, contours)
     for j, p in enumerate(s_pts):
         points.append(p.tolist())
         point_map.append( skel_owner[j] )
-
+    
     return np.array(points), point_map
 

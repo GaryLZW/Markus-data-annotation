@@ -6,7 +6,35 @@ image_processor/
 ├── enhancer.py         # 超分辨率增强
 └── utils.py            # IO / 并行处理
 
+Markus 图片
+   │
+   ▼
+开源 OCSR（DECIMER / Imago / OSRA）
+   │
+   ▼
+标准 SMILES
+   │
+   ├── 能完整描述？──:arrow_forward: :white_check_mark: 直接用
+   │
+   └── 不能？──────:arrow_forward: :warning: 人工 / 半自动处理
+
+Markus 图片
+ ↓
+MolScribe OCSR → SMILES
+ ↓
+自动判据（是否完整）
+ ↓
+OCR（检测 tBu / Bn / R / Ph 等）
+ ↓
+标记 need_review
+ ↓
+人工确认（Excel / CSV）
+
+
 
 Dependencies
 
-OpenCV, scikit-learn
+OpenCV, scikit-learn, molscribe torch torchvision torchaudio pytesseract pandas rdkit streamlit pandas rdkit pillow
+
+sudo apt install tesseract-ocr  # Linux
+
