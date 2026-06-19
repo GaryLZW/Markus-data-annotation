@@ -34,7 +34,11 @@ OCR（检测 tBu / Bn / R / Ph 等）
 
 Dependencies
 
-OpenCV, scikit-learn, molscribe torch torchvision torchaudio pytesseract pandas rdkit streamlit pandas rdkit pillow
+This is for image_processor
+OpenCV, scikit-learn, 
+
+This is for molscribe
+molscribe torch torchvision torchaudio pytesseract pandas rdkit streamlit pandas rdkit pillow
 
 sudo apt install tesseract-ocr  # Linux
 
